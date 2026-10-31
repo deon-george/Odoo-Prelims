@@ -5,13 +5,16 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts'
 import { Plus, Download, Send, Eye, CalendarDays, MoreVertical, Check, FileText } from 'lucide-react'
-import { Shell, Card, Status, PageHeader, Button, SearchBar, ActionButtons } from './components'
-import { products, subscriptions, invoices } from './data'
+import { Shell, Card, Status, PageHeader, Button, SearchBar } from './components'
+import { subscriptions, invoices } from './data'
 import { getResource } from './api'
 import LoginPage from './pages/Login'
 import RegisterPage from './pages/Register'
 import ForgotPasswordPage from './pages/ForgotPassword'
 import ResetPasswordPage from './pages/ResetPassword'
+import ProductsPage from './pages/Products'
+import PlansPage from './pages/Plans'
+import CatalogPage from './pages/Catalog'
 import { PublicOnly, RequireAuth } from './auth/RequireAuth'
 
 const revenue = [{m:'Jan',v:110},{m:'Feb',v:160},{m:'Mar',v:220},{m:'Apr',v:440},{m:'May',v:460},{m:'Jun',v:610}]
@@ -22,7 +25,6 @@ function AdminContent() { return <div className="mt-5 grid gap-5 lg:grid-cols-[1
 function StaffContent() { return <div className="mt-5 grid gap-5 lg:grid-cols-2"><MiniTable title="Recent Payments" rows={[['PAY-01489','ABC Traders','₹ 2,454.40','10 Jun 2025'],['PAY-01488','Global Tech','₹ 5,000.00','10 Jun 2025'],['PAY-01487','Sunrise Pvt Ltd','₹ 1,180.00','09 Jun 2025'],['PAY-01486','Metro Solutions','₹ 3,540.00','08 Jun 2025']]}/><MiniTable title="Overdue Invoices" rows={[['INV-01412','KVR Enterprises','₹ 7,080.00'],['INV-01418','BlueSky Pvt Ltd','₹ 2,360.00'],['INV-01410','TechMart','₹ 1,180.00']]}/></div> }
 function CustomerContent() { return <div className="mt-5 grid gap-5 lg:grid-cols-2"><MiniTable title="My Subscriptions" rows={[['Odoo ERP (Monthly)','Active'],['Next Billing: 01 Jul 2025',''],['Support (Monthly)','Active'],['Next Billing: 01 Jul 2025',''],['Hosting (Monthly)','Active']]}/><MiniTable title="Recent Invoices" rows={invoices.slice(0,3).map(i=>[i.id,i.amount,i.status])}/></div> }
 function MiniTable({title,rows}) { return <Card><div className="mb-3 flex justify-between"><b className="text-sm">{title}</b><Link className="text-[10px] font-semibold text-brand">View All →</Link></div><div className="divide-y">{rows.map((r,i)=><div className="grid grid-cols-3 gap-2 py-2 text-[10px]" key={i}>{r.map((x,j)=><span key={j} className={j===0?'font-semibold text-brand':''}>{x === 'Active' || x === 'Paid' || x === 'Partially Paid' ? <Status>{x}</Status>:x}</span>)}</div>)}</div></Card> }
-function Products() { const { data = products } = useQuery({ queryKey:['products'], queryFn:()=>getResource('/products',products) }); return <Shell><PageHeader title="Products" action={<Button><Plus size={14}/>Add Product</Button>}/><Card><SearchBar placeholder="Search products..."/><DataTable headers={['Product Name','Type','Base Price','Status','Actions']}>{data.map(p=><tr key={p.name}><td className="font-semibold">{p.name}</td><td><span className="chip">{p.type}</span></td><td>{p.price}</td><td><Status>{p.status}</Status></td><td><ActionButtons/></td></tr>)}</DataTable></Card></Shell> }
 function Subscriptions() { const { data = subscriptions } = useQuery({ queryKey:['subscriptions'], queryFn:()=>getResource('/subscriptions',subscriptions) }); return <Shell><PageHeader title="Subscriptions" action={<Button><Plus size={14}/>New Subscription</Button>}/><Card><div className="flex flex-col justify-between gap-3 sm:flex-row"><SearchBar placeholder="Search by customer, subscription no..."/><div className="flex gap-1 rounded-md bg-[#f4f2ff] p-1 text-[10px] font-semibold"><button className="tab-active">All (248)</button><button>Active (1,204)</button><button>Paused (48)</button><button>Closed (176)</button></div></div><DataTable headers={['Subscription No.','Customer','Plan','Start Date','Next Billing','Status','']} >{data.map(s=><tr key={s[0]}>{s.map((x,i)=><td key={i} className={i===0?'font-semibold text-brand':''}>{i===5?<Status>{x}</Status>:x}</td>)}<td><MoreVertical size={16}/></td></tr>)}</DataTable></Card></Shell> }
 function DataTable({headers,children}) { return <div className="mt-4 overflow-x-auto"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{children}</tbody></table></div> }
 function Invoices({customer=false}) { const navigate=useNavigate(); return <Shell customer={customer}><PageHeader title={customer?'My Invoices':'Invoices'} action={!customer && <Button onClick={()=>navigate('/quotations/new')}><Plus size={14}/>Create Invoice</Button>}/><Card><SearchBar placeholder="Search by invoice no..."/><DataTable headers={['Invoice No.','Billing Period','Amount','Status','Actions']}>{invoices.map(i=><tr key={i.id}><td><Link className="font-semibold text-brand" to={`/invoices/${i.id}`}>{i.id}</Link></td><td>{i.period}</td><td>{i.amount}</td><td><Status>{i.status}</Status></td><td><button onClick={()=>navigate(`/invoices/${i.id}`)} className="icon-button"><Download size={14}/></button></td></tr>)}</DataTable></Card></Shell> }
@@ -43,11 +45,13 @@ export default function App(){
       <Route path="/staff" element={<RequireAuth roles={['admin','staff']}><Dashboard staff/></RequireAuth>}/>
       <Route path="/portal" element={<RequireAuth roles={['customer']}><Dashboard customer/></RequireAuth>}/>
 
-      <Route path="/products" element={<RequireAuth roles={['admin','staff']}><Products/></RequireAuth>}/>
+      <Route path="/products" element={<RequireAuth roles={['admin','staff']}><ProductsPage/></RequireAuth>}/>
+      <Route path="/plans" element={<RequireAuth roles={['admin','staff']}><PlansPage/></RequireAuth>}/>
       <Route path="/subscriptions" element={<RequireAuth roles={['admin','staff']}><Subscriptions/></RequireAuth>}/>
       <Route path="/invoices" element={<RequireAuth roles={['admin','staff']}><Invoices/></RequireAuth>}/>
       <Route path="/invoices/:id" element={<RequireAuth roles={['admin','staff']}><InvoiceDetails/></RequireAuth>}/>
       <Route path="/quotations/new" element={<RequireAuth roles={['admin','staff']}><Quotation/></RequireAuth>}/>
+      <Route path="/portal/catalog" element={<RequireAuth roles={['customer']}><CatalogPage/></RequireAuth>}/>
       <Route path="/portal/invoices" element={<RequireAuth roles={['customer']}><Invoices customer/></RequireAuth>}/>
 
       <Route path="/discounts" element={<RequireAuth roles={['admin']}><Placeholder/></RequireAuth>}/>
