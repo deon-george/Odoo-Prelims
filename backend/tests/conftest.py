@@ -46,7 +46,9 @@ from app.db.base import Base  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.password_reset_token import PasswordResetToken  # noqa: E402
+from app.models.product import Product  # noqa: E402
 from app.models.refresh_token import RefreshToken  # noqa: E402
+from app.models.subscription_plan import PlanFeature, SubscriptionPlan  # noqa: E402
 from app.models.user import User, UserRole, UserStatus  # noqa: E402
 
 DEFAULT_PASSWORD = "Str0ng!Pass"
@@ -63,6 +65,9 @@ def _database_schema():
 @pytest.fixture(autouse=True)
 def _clean_state(_database_schema):
     with SessionLocal() as db:
+        db.execute(delete(PlanFeature))
+        db.execute(delete(SubscriptionPlan))
+        db.execute(delete(Product))
         db.execute(delete(PasswordResetToken))
         db.execute(delete(RefreshToken))
         db.execute(delete(User))
