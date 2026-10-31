@@ -8,6 +8,11 @@ import { Plus, Download, Send, Eye, CalendarDays, MoreVertical, Check, FileText 
 import { Shell, Card, Status, PageHeader, Button, SearchBar, ActionButtons } from './components'
 import { products, subscriptions, invoices } from './data'
 import { getResource } from './api'
+import LoginPage from './pages/Login'
+import RegisterPage from './pages/Register'
+import ForgotPasswordPage from './pages/ForgotPassword'
+import ResetPasswordPage from './pages/ResetPassword'
+import { PublicOnly, RequireAuth } from './auth/RequireAuth'
 
 const revenue = [{m:'Jan',v:110},{m:'Feb',v:160},{m:'Mar',v:220},{m:'Apr',v:440},{m:'May',v:460},{m:'Jun',v:610}]
 const metricsAdmin = [['Active Subscriptions','1,248','+5.2%','mint'],['Revenue','₹ 24,80,000','+12.4%','lilac'],['Payments Received','₹ 20,75,000','+8.1%','aqua'],['Outstanding Amount','₹ 4,05,000','-2.4%','peach'],['Overdue Invoices','56','+6.0%','rose']]
@@ -25,6 +30,30 @@ function InvoiceDetails() { return <Shell><div className="mb-3 text-[10px] text-
 const schema=z.object({customer:z.string().min(1,'Choose a customer'), template:z.string().min(1,'Choose a template'), quotationDate:z.string().min(1), expiryDate:z.string().min(1)})
 function Quotation() { const navigate=useNavigate(); const { register, handleSubmit, formState:{errors} }=useForm({resolver:zodResolver(schema),defaultValues:{quotationDate:'10 Jun 2025',expiryDate:'25 Jun 2025'}}); const submit=()=>navigate('/subscriptions'); return <Shell><div className="mb-3 text-[10px] text-slate-500">← Quotations / <span className="text-brand">New Quotation</span></div><PageHeader title="Create Quotation" action={<><Button className="mr-2">Save as Template</Button><Button onClick={handleSubmit(submit)}><Check size={13}/>Save</Button></>}/><form onSubmit={handleSubmit(submit)}><Card><div className="grid gap-4 md:grid-cols-2"><Field label="Customer *" error={errors.customer}><select {...register('customer')} className="field"><option value="">Select customer</option><option>ABC Traders Pvt Ltd</option></select></Field><Field label="Template" error={errors.template}><select {...register('template')} className="field"><option value="">Select template</option><option>Standard Monthly</option></select></Field><Field label="Quotation Date *" error={errors.quotationDate}><input {...register('quotationDate')} className="field"/></Field><Field label="Expiry Date" error={errors.expiryDate}><input {...register('expiryDate')} className="field"/></Field><Field label="Validity (Days) *"><input className="field" value="15" readOnly/></Field></div><div className="mt-6"><b className="text-xs">Items</b><DataTable headers={['Product / Plan','Quantity','Unit Price','Tax','Amount','']}><tr><td><select className="mini-field"><option>Odoo ERP (Standard)</option></select></td><td><input className="mini-field" value="1" readOnly/></td><td><input className="mini-field" value="1,000.00" readOnly/></td><td><select className="mini-field"><option>18%</option></select></td><td>₹ 1,180.00</td><td>🗑</td></tr><tr><td><select className="mini-field"><option>Support (Monthly)</option></select></td><td><input className="mini-field" value="1" readOnly/></td><td><input className="mini-field" value="1,200.00" readOnly/></td><td><select className="mini-field"><option>18%</option></select></td><td>₹ 1,416.00</td><td>🗑</td></tr></DataTable><button className="mt-3 rounded border border-brand px-2 py-1 text-[10px] font-bold text-brand">+ Add Item</button></div></Card></form></Shell> }
 function Field({label,error,children}) { return <label className="block text-[10px] font-semibold">{label}{children}{error&&<span className="mt-1 block text-rose-500">{error.message}</span>}</label> }
-function Login() { const nav=useNavigate(); const {register,handleSubmit}=useForm(); return <div className="grid min-h-screen place-items-center bg-[#f4f5fb] p-5"><div className="grid w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-xl md:grid-cols-2"><div className="hidden min-h-[480px] bg-gradient-to-br from-[#10173a] to-[#2b2370] p-12 text-white md:block"><div className="mb-28 flex items-center gap-2 font-bold"><div className="grid h-7 w-7 place-items-center rounded bg-brand">S</div>SMS</div><div className="text-center"><div className="text-2xl font-bold">Subscription<br/>Management System</div><p className="mt-5 text-sm leading-6 text-indigo-100">Manage subscriptions, billing,<br/>payments and revenue in one place.</p><div className="mt-16 text-7xl">◈</div></div></div><form onSubmit={handleSubmit(()=>nav('/'))} className="p-10 md:p-14"><h1 className="text-2xl font-bold">Welcome Back</h1><p className="mb-8 text-xs text-slate-500">Sign in to your account</p><Field label="Email"><input {...register('email')} className="field mt-2" placeholder="Enter your email"/></Field><Field label="Password"><input {...register('password')} className="field mt-2" type="password" placeholder="Enter your password"/></Field><a className="float-right mt-2 text-[10px] font-semibold text-brand">Forgot password?</a><Button type="submit" className="mt-8 w-full justify-center">Login</Button><p className="mt-5 text-center text-[10px]">Don't have an account? <a className="font-bold text-brand">Register</a></p></form></div></div> }
 function Placeholder(){return <Shell><PageHeader title="Coming Soon"/><Card><p className="text-sm text-slate-500">This section is ready to connect to your FastAPI API.</p></Card></Shell>}
-export default function App(){return <Routes><Route path="/login" element={<Login/>}/><Route path="/" element={<Dashboard/>}/><Route path="/staff" element={<Dashboard staff/>}/><Route path="/portal" element={<Dashboard customer/>}/><Route path="/products" element={<Products/>}/><Route path="/subscriptions" element={<Subscriptions/>}/><Route path="/invoices" element={<Invoices/>}/><Route path="/portal/invoices" element={<Invoices customer/>}/><Route path="/invoices/:id" element={<InvoiceDetails/>}/><Route path="/quotations/new" element={<Quotation/>}/><Route path="*" element={<Placeholder/>}/></Routes>}
+export default function App(){
+  return (
+    <Routes>
+      <Route path="/login" element={<PublicOnly><LoginPage/></PublicOnly>}/>
+      <Route path="/register" element={<PublicOnly><RegisterPage/></PublicOnly>}/>
+      <Route path="/forgot-password" element={<PublicOnly><ForgotPasswordPage/></PublicOnly>}/>
+      <Route path="/reset-password" element={<ResetPasswordPage/>}/>
+
+      <Route path="/" element={<RequireAuth roles={['admin']}><Dashboard/></RequireAuth>}/>
+      <Route path="/staff" element={<RequireAuth roles={['admin','staff']}><Dashboard staff/></RequireAuth>}/>
+      <Route path="/portal" element={<RequireAuth roles={['customer']}><Dashboard customer/></RequireAuth>}/>
+
+      <Route path="/products" element={<RequireAuth roles={['admin','staff']}><Products/></RequireAuth>}/>
+      <Route path="/subscriptions" element={<RequireAuth roles={['admin','staff']}><Subscriptions/></RequireAuth>}/>
+      <Route path="/invoices" element={<RequireAuth roles={['admin','staff']}><Invoices/></RequireAuth>}/>
+      <Route path="/invoices/:id" element={<RequireAuth roles={['admin','staff']}><InvoiceDetails/></RequireAuth>}/>
+      <Route path="/quotations/new" element={<RequireAuth roles={['admin','staff']}><Quotation/></RequireAuth>}/>
+      <Route path="/portal/invoices" element={<RequireAuth roles={['customer']}><Invoices customer/></RequireAuth>}/>
+
+      <Route path="/discounts" element={<RequireAuth roles={['admin']}><Placeholder/></RequireAuth>}/>
+      <Route path="/taxes" element={<RequireAuth roles={['admin']}><Placeholder/></RequireAuth>}/>
+      <Route path="/reports" element={<RequireAuth roles={['admin']}><Placeholder/></RequireAuth>}/>
+      <Route path="*" element={<RequireAuth><Placeholder/></RequireAuth>}/>
+    </Routes>
+  )
+}
