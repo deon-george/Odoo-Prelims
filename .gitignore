@@ -1,12 +1,16 @@
-node_modules/
-dist/
-.env
-.env.local
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
 
-# Python / backend
+# Backend
+backend/.env
+backend/.venv/
+backend/.pytest_cache/
+backend/var/
+backend/*.egg-info/
+
+# Python
 __pycache__/
 *.py[cod]
-.venv/
-.pytest_cache/
-backend/var/
-*.egg-info/

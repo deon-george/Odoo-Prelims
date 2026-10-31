@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, Power } from 'lucide-react'
+import { AlertTriangle, Pencil, Plus, Power } from 'lucide-react'
 import {
   Button,
   Card,
   Field,
   Modal,
   PageHeader,
+  PlanAvailability,
   SearchBar,
   Shell,
   Status,
@@ -34,7 +35,7 @@ const EMPTY_FORM = {
 function ErrorBanner({ message }) {
   if (!message) return null
   return (
-    <p className="mb-3 rounded-md bg-rose-50 px-3 py-2 text-[10px] font-semibold text-rose-600">
+    <p className="mb-4 rounded-md bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
       {message}
     </p>
   )
@@ -105,11 +106,18 @@ export default function PlansPage() {
       .includes(term)
   })
 
+  const unavailableCount = plans.filter(
+    (plan) => plan.product?.status === 'inactive',
+  ).length
+  const activeProducts = products.filter(
+    (product) => product.status === 'active',
+  )
+
   function openCreate() {
     setEditing(null)
     setForm({
       ...EMPTY_FORM,
-      product_id: products.length ? String(products[0].id) : '',
+      product_id: activeProducts.length ? String(activeProducts[0].id) : '',
     })
     setFormError('')
     setShowForm(true)
@@ -142,6 +150,10 @@ export default function PlansPage() {
     setFormError('')
     if (!form.product_id) {
       setFormError('Select a product for this plan.')
+      return
+    }
+    if (!editing && activeProducts.length === 0) {
+      setFormError('An active product is required before an active plan can be created.')
       return
     }
     if (!form.name.trim()) {
@@ -208,8 +220,23 @@ export default function PlansPage() {
             <option value="yearly">Yearly</option>
           </select>
         </div>
-        <ErrorBanner message={actionError || (loadError && formatApiError(loadError))} />
-        <div className="mt-4 overflow-x-auto">
+        <ErrorBanner
+          message={actionError || (loadError && formatApiError(loadError))}
+        />
+        {unavailableCount > 0 && (
+          <div className="mb-4 mt-4 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            <span>
+              <b>
+                {unavailableCount} plan{unavailableCount === 1 ? ' is' : 's are'} unavailable.
+              </b>{' '}
+              The associated product{unavailableCount === 1 ? ' is' : 's are'}{' '}
+              inactive. This applies regardless of each plan's stored status;
+              reactivate the product to restore availability for active plans.
+            </span>
+          </div>
+        )}
+        <div className="mt-5 overflow-x-auto">
           <table>
             <thead>
               <tr>
@@ -218,27 +245,35 @@ export default function PlansPage() {
                 <th>Price</th>
                 <th>Billing Interval</th>
                 <th>Features</th>
-                <th>Status</th>
+                <th>Plan Status</th>
+                <th>Availability</th>
                 {isAdmin && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6}>Loading plans...</td>
+                  <td colSpan={isAdmin ? 8 : 7}>Loading plans...</td>
                 </tr>
               )}
               {!isLoading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6}>No plans found.</td>
+                  <td colSpan={isAdmin ? 8 : 7}>No plans found.</td>
                 </tr>
               )}
               {filtered.map((plan) => (
-                <tr key={plan.id}>
+                <tr
+                  key={plan.id}
+                  className={
+                    plan.product?.status === 'inactive'
+                      ? 'plan-unavailable'
+                      : undefined
+                  }
+                >
                   <td>
                     <span className="font-semibold">{plan.name}</span>
                     {plan.description && (
-                      <span className="block text-[9px] text-slate-400">
+                      <span className="mt-1 block text-xs text-slate-500">
                         {plan.description}
                       </span>
                     )}
@@ -246,12 +281,13 @@ export default function PlansPage() {
                   <td>
                     {plan.product?.name}
                     {plan.product?.status === 'inactive' && (
-                      <span className="block text-[9px] text-slate-400">
+                      <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-amber-700">
+                        <AlertTriangle size={12} />
                         Product inactive
                       </span>
                     )}
                   </td>
-                  <td>{formatPrice(plan.price)}</td>
+                  <td className="font-medium">{formatPrice(plan.price)}</td>
                   <td>{intervalLabel(plan.billing_interval)}</td>
                   <td>
                     {plan.features?.length
@@ -264,6 +300,9 @@ export default function PlansPage() {
                     <Status>
                       {plan.status === 'active' ? 'Active' : 'Inactive'}
                     </Status>
+                  </td>
+                  <td>
+                    <PlanAvailability plan={plan} />
                   </td>
                   {isAdmin && (
                     <td>
@@ -310,6 +349,12 @@ export default function PlansPage() {
       >
         <form className="space-y-4" onSubmit={handleSubmit}>
           <ErrorBanner message={formError} />
+          {!editing && activeProducts.length === 0 && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              An active product is required before you can create an active
+              subscription plan. Reactivate a product first.
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Product *">
               <select
@@ -321,7 +366,11 @@ export default function PlansPage() {
               >
                 <option value="">Select product</option>
                 {products.map((product) => (
-                  <option key={product.id} value={product.id}>
+                  <option
+                    key={product.id}
+                    value={product.id}
+                    disabled={!editing && product.status === 'inactive'}
+                  >
                     {product.name}
                     {product.status === 'inactive' ? ' (inactive)' : ''}
                   </option>
@@ -406,7 +455,10 @@ export default function PlansPage() {
             >
               Cancel
             </button>
-            <Button type="submit" disabled={saveMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending || (!editing && activeProducts.length === 0)}
+            >
               {saveMutation.isPending ? 'Saving...' : 'Save Plan'}
             </Button>
           </div>

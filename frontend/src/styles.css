@@ -1,0 +1,388 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-width: 236px;
+  --page-max: 1600px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #101a3b;
+}
+
+/* Older screens still contain small utility classes from the initial mockup.
+   Keep their hierarchy, but bring that legacy text up to the readable scale. */
+[class*='text-[9px]'],
+[class*='text-[10px]'] {
+  font-size: 0.8125rem;
+}
+
+/* ---------- App shell ---------- */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #14203f, #0d1530);
+  color: #d8def4;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-brand {
+  display: flex;
+  flex: 0 0 64px;
+  align-items: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 18px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  padding: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+}
+
+.sidebar-footer {
+  flex: 0 0 auto;
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  border: 0;
+  background: rgba(13, 21, 48, 0.48);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d3e8;
+  text-align: left;
+  border-radius: 6px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.nav-item svg {
+  flex: 0 0 auto;
+}
+
+.nav-item:hover {
+  color: #fff;
+  background: rgba(87, 67, 207, 0.42);
+}
+
+.nav-active {
+  color: #fff;
+  background: #5743cf;
+  box-shadow: inset 3px 0 0 #a78bfa;
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 1px;
+}
+
+.app-main {
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #e9eaf2;
+}
+
+.page-container {
+  width: 100%;
+  max-width: var(--page-max);
+  padding: 20px 16px 36px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .app-header {
+    padding: 0 24px;
+  }
+
+  .page-container {
+    padding: 24px 24px 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-main {
+    margin-left: var(--sidebar-width);
+  }
+
+  .app-header {
+    padding: 0 32px;
+  }
+
+  .page-container {
+    padding: 30px 32px 48px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    box-shadow: 8px 0 28px rgba(13, 21, 48, 0.25);
+    transform: translateX(-100%);
+  }
+
+  .sidebar-open {
+    transform: translateX(0);
+  }
+}
+
+/* ---------- Typography and controls ---------- */
+
+.metric {
+  min-height: 104px;
+  padding: 16px !important;
+}
+
+.metric p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3d4767;
+}
+
+.metric b {
+  display: block;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.metric small {
+  font-size: 12px;
+  font-weight: 600;
+  color: #14a675;
+}
+
+.metric.lilac {
+  background: #f1eeff;
+}
+
+.metric.aqua {
+  background: #e9fcfa;
+}
+
+.metric.mint {
+  background: #edfdf5;
+}
+
+.metric.peach {
+  background: #fff8ee;
+}
+
+.metric.rose {
+  background: #fff1f2;
+}
+
+.field {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #1f2a44;
+  background: #fff;
+  border: 1px solid #dce0ec;
+  border-radius: 6px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.field::placeholder {
+  color: #94a3b8;
+}
+
+.field:focus,
+.mini-field:focus {
+  border-color: #6b50de;
+  box-shadow: 0 0 0 3px #edeaff;
+}
+
+textarea.field {
+  height: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 1.5;
+}
+
+select.field {
+  cursor: pointer;
+}
+
+.select-small {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #dde0eb;
+  border-radius: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6146db;
+  background: #ece9ff;
+  border-radius: 4px;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 4px;
+  color: #4c3ac7;
+  background: #fff;
+  border: 1px solid #e1e4ef;
+  border-radius: 6px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.icon-button:hover {
+  background: #f4f2ff;
+  border-color: #c9c0f4;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tab-active {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #fff;
+  background: #6348db;
+  border-radius: 4px;
+}
+
+.mini-field {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid #dce0ec;
+  border-radius: 5px;
+}
+
+/* ---------- Tables ---------- */
+
+table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th {
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #536078;
+  text-align: left;
+  white-space: nowrap;
+  background: #f3f5f9;
+  border-bottom: 1px solid #e6e9f1;
+}
+
+th:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+th:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+td {
+  padding: 14px;
+  color: #34405a;
+  vertical-align: middle;
+  line-height: 1.45;
+  border-bottom: 1px solid #edf0f5;
+}
+
+tbody tr {
+  transition: background 0.12s ease;
+}
+
+tbody tr:hover td {
+  background: #fafbff;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.plan-unavailable td {
+  background: #fffbeb;
+}
+
+.plan-unavailable td:first-child {
+  box-shadow: inset 3px 0 0 #f59e0b;
+}
+
+.plan-unavailable:hover td {
+  background: #fff7e0;
+}
