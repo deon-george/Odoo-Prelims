@@ -2,3 +2,11 @@ node_modules/
 dist/
 .env
 .env.local
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+backend/var/
+*.egg-info/
