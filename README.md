@@ -1,6 +1,6 @@
-# Odoo-Prelims
+# SMS
 
-Odoo-Prelims is a subscription-management application built for the Odoo hackathon preliminaries. It provides a foundation for managing a product catalogue and subscription plans with role-aware access, while keeping the customer-facing catalogue limited to products and plans that are currently available.
+SMS is a subscription-management application built for the Odoo hackathon preliminaries. It provides a foundation for managing a product catalogue and subscription plans with role-aware access, while keeping the customer-facing catalogue limited to products and plans that are currently available.
 
 The project separates a React frontend from a FastAPI/MySQL backend. Its current goals are secure account access, clear role boundaries, maintainable product and plan data, and a professional interface for administration and catalogue viewing.
 
